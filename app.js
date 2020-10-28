@@ -32,7 +32,8 @@ const waitForServerOK = async (instanceIp, client) => {
   try {
     const params = {
       InstanceIds: [
-        `${process.env.INSTANCE_ID}`],
+        `${process.env.INSTANCE_ID}`,
+      ],
     };
 
     const statusCheckResponse = await client.waitFor('instanceStatusOk', params).promise();
@@ -111,13 +112,51 @@ const manageServer = async (client) => {
   return message;
 };
 
+const stopServer = async (client) => {
+  const instance = await getInstanceInformation(client);
+  let message = 'ERROR';
+
+  if (instance) {
+    const state = instance.State;
+    const stateName = state.Name;
+
+    if ((stateName === 'running') || (stateName === 'pending')) {
+      const params = {
+        InstanceIds: [`${process.env.INSTANCE_ID}`],
+      };
+      const stopInstanceResponse = await client.stopInstances(params).promise();
+
+      console.log('\nAWS EC2 STOP\n');
+      console.log(`${JSON.stringify(stopInstanceResponse)}`);
+      console.log('\n');
+
+      const instancesInformation = await client.waitFor('instanceStopped', params).promise();
+      const reservations = instancesInformation.Reservations;
+      const instances = reservations[0].Instances;
+
+      if (instances[0].State.Name === 'stopped') {
+        message = 'server stopped';
+      }
+    } else if (stateName === 'stopped') {
+      message = 'server stopped';
+    }
+  }
+
+  return message;
+};
+
 app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+  extended: false,
+}));
 app.use(bodyParser.json());
 app.use(express.static(`${__dirname}/public`));
 
-app.get('/', (_req, res) => {
-  res.render('pages/index', { ipMessage: '' });
+app.get('/', (req, res) => {
+  res.render('pages/index', {
+    ipMessage: '',
+    path: req.body.path,
+  });
 });
 
 app.post('/initMCServer', async (req, res) => {
@@ -135,6 +174,26 @@ app.post('/initMCServer', async (req, res) => {
 
   res.render('pages/index', {
     ipMessage: message,
+    path: req.path,
+  });
+});
+
+app.post('/stopMCServer', async (req, res) => {
+  const {
+    password,
+  } = req.body;
+  let message = 'Password Incorrect!';
+
+  if (password === process.env.SERVER_PASSWORD) {
+    const ec2 = new AWS.EC2({
+      region: process.env.EC2_REGION,
+    });
+    message = await stopServer(ec2);
+  }
+
+  res.render('pages/index', {
+    ipMessage: message,
+    path: req.path,
   });
 });
 

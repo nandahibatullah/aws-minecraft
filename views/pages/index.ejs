@@ -8,10 +8,17 @@
 
 <body>
   <h1> Friendos Minecraft Server </h1>
-  <form action="/initMCServer" , method="POST">
-    <input type="text" name="password" placeholder="Password">
-    <input type="submit" value="Start Server">
-  </form>
+  <% if (path === '/initMCServer') { %> 
+    <form action="/stopMCServer" , method="POST">
+      <input type="text" name="password" placeholder="Password">
+      <input type="submit" value="Stop Server">
+    </form>
+  <% } else { %> 
+    <form action="/initMCServer" , method="POST">
+      <input type="text" name="password" placeholder="Password">
+      <input type="submit" value="Start Server">
+    </form>
+  <% } %>
   <% if (ipMessage) { %> 
     <h2> <%- ipMessage %> </h2>
   <% } %>
