@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+
+<head>
+  <%- include('../partials/head'); %>
+</head>
+
+<body>
+  <h1> Friendos Minecraft Server </h1>
+  <form action="/initMCServer" , method="POST">
+    <input type="text" name="password" placeholder="Password">
+    <input type="submit" value="Start Server">
+  </form>
+  <% if (ipMessage) { %> 
+    <h2> <%- ipMessage %> </h2>
+  <% } %>
+</body>
+
+</html>
