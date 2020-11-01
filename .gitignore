@@ -1,0 +1,10 @@
+/.vscode/
+.DS_STORE
+*.pem
+/.vs/slnx.sqlite
+.env
+env/
+node_modules
+*.crt
+*.csr
+*.key
