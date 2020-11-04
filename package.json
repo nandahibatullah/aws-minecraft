@@ -20,6 +20,6 @@
     "eslint-plugin-import": "^2.22.1"
   },
   "scripts": {
-    "createEC2Instance": "node createEC2Instance.js"
+    "create-ec2-instance": "node scripts/createEC2Instance.js"
   }
 }

@@ -143,7 +143,7 @@ app.use(bodyParser.urlencoded({
   extended: false,
 }));
 app.use(bodyParser.json());
-app.use(express.static(`${__dirname}/public`));
+app.use(express.static(`${__dirname}/client/public`));
 
 app.get('/', (req, res) => {
   res.render('pages/index', {
