@@ -68,42 +68,36 @@ const getInstanceInformation = async (client) => {
 };
 
 const startServer = async (client) => {
-  const params = {
-    InstanceIds: [`${process.env.INSTANCE_ID}`],
-  };
-  const startInstanceResponse = await client.startInstances(params).promise();
-
-  let message = 'ERROR';
-  console.log('\nAWS EC2 START\n');
-  console.log(`${JSON.stringify(startInstanceResponse)}`);
-  console.log('\n');
-
-  const instancesInformation = await client.waitFor('instanceRunning', params).promise();
-  const reservations = instancesInformation.Reservations;
-  const instances = reservations[0].Instances;
-  const instance = instances[0];
-  const ipAddress = instance.PublicIpAddress;
-
-  message = `Server is starting, this may take a few minutes.\nIP: ${ipAddress}`;
-
-  waitForServerOK(ipAddress, client);
-
-  return message;
-};
-
-const manageServer = async (client) => {
-  const instance = await getInstanceInformation(client);
+  const instanceInformation = await getInstanceInformation(client);
 
   let message = 'ERROR';
 
-  if (instance) {
-    const state = instance.State;
+  if (instanceInformation) {
+    const state = instanceInformation.State;
     const stateName = state.Name;
 
     if ((stateName === 'stopped') || (stateName === 'shutting-down')) {
-      message = await startServer(client);
+      const params = {
+        InstanceIds: [`${process.env.INSTANCE_ID}`],
+      };
+      const startInstanceResponse = await client.startInstances(params).promise();
+
+      message = 'ERROR';
+      console.log('\nAWS EC2 START\n');
+      console.log(`${JSON.stringify(startInstanceResponse)}`);
+      console.log('\n');
+
+      const instancesInformation = await client.waitFor('instanceRunning', params).promise();
+      const reservations = instancesInformation.Reservations;
+      const instances = reservations[0].Instances;
+      const instance = instances[0];
+      const ipAddress = instance.PublicIpAddress;
+
+      message = `Server is starting, this may take a few minutes.\nIP: ${ipAddress}`;
+
+      waitForServerOK(ipAddress, client);
     } else if (stateName === 'running') {
-      message = `IP: ${instance.PublicIpAddress}`;
+      message = `IP: ${instanceInformation.PublicIpAddress}`;
     } else {
       message = 'ERROR';
     }
@@ -162,7 +156,7 @@ app.post('/initMCServer', async (req, res) => {
     const ec2 = new AWS.EC2({
       region: process.env.EC2_REGION,
     });
-    message = await manageServer(ec2);
+    message = await startServer(ec2);
   }
 
   res.render('pages/index', {
