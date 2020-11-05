@@ -4,9 +4,9 @@ module.exports = class EC2Helper {
     this.getClient = () => ec2Client;
   }
 
-  async describeInstance(state, instanceID) {
+  async describeInstance(state, instanceId) {
     const params = {
-      InstanceIds: [instanceID],
+      InstanceIds: [instanceId],
     };
     const instancesResponse = await this.ec2Client.waitFor(state, params).promise();
     const instanceData = instancesResponse.Reservations[0].Instances[0];
