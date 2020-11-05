@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk');
 const EC2Helper = require('../helpers/ec2Helper');
+const FailedToStartServerError = require('../models/errors/failedToStartServerError');
 
 const EC2Client = new AWS.EC2({
   region: process.env.EC2_REGION,
@@ -19,14 +20,16 @@ const startServer = async (serverId) => {
     const ec2Helper = new EC2Helper(EC2Client);
     await ec2Helper.startInstance(serverId);
 
-    ({ state, ipAddress } = await getServerInformation('instanceRunning', serverId));
+    const serverInformation = await getServerInformation('instanceRunning', serverId);
+    state = 'pending';
+    ipAddress = serverInformation.ipAddress;
   } else if (state === 'running') {
     ({ state, ipAddress } = await getServerInformation('instanceRunning', serverId));
   } else {
-    throw new Error('Failed to start the the server...');
+    throw new FailedToStartServerError('Failed to start the the server...');
   }
 
-  return ipAddress;
+  return { state, ipAddress };
 };
 
 module.exports = {

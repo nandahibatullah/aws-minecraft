@@ -8,7 +8,7 @@
 
 <body>
   <h1> Friendos Minecraft Server </h1>
-  <% if (path === '/initMCServer') { %> 
+  <% if (locals.path && path === '/initMCServer') { %> 
     <form action="/stopMCServer" , method="POST">
       <input type="text" name="password" placeholder="Password">
       <input type="submit" value="Stop Server">
@@ -19,9 +19,25 @@
       <input type="submit" value="Start Server">
     </form>
   <% } %>
-  <% if (ipMessage) { %> 
-    <h2> <%- ipMessage %> </h2>
-  <% } %>
+  <div>
+    <% if (locals.body && body.state === 'running' && body.ipAddress) { %> 
+      <h2>
+        IP: <%- body.ipAddress %> | mcserver.nandahibatullah.dev
+      </h2>
+    <% } else if (locals.body && body.state === 'pending' && body.ipAddress) { %>
+      <h2>
+        Server is starting, this may take a few minutes...</br>
+        IP: <%- body.ipAddress %> | mcserver.nandahibatullah.dev
+      </h2>
+    <% } else if (locals.body && body.message) { %>
+      <h2>
+        <%- body.message %> 
+      </h2>
+    <% } else if (messages) { %>
+      <h2>
+        <p><%= messages %></p>
+      </h2>
+    <% } %>
+    </div>
 </body>
-
 </html>

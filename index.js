@@ -6,9 +6,16 @@ const {
   NodeSSH,
 } = require('node-ssh');
 require('dotenv').config();
+const session = require('express-session');
+const cookieParser = require('cookie-parser');
+const flash = require('connect-flash');
+
+const serverService = require('./services/serverService');
+const FailedToStartServerError = require('./models/errors/failedToStartServerError');
 
 const app = express();
 const ssh = new NodeSSH();
+const sessionStore = new session.MemoryStore();
 
 const initServerCommands = async (instanceIp) => {
   try {
@@ -28,7 +35,10 @@ const initServerCommands = async (instanceIp) => {
   }
 };
 
-const waitForServerOK = async (instanceIp, client) => {
+const waitForServerOK = async (instanceIp) => {
+  const client = new AWS.EC2({
+    region: process.env.EC2_REGION,
+  });
   try {
     const params = {
       InstanceIds: [
@@ -67,45 +77,6 @@ const getInstanceInformation = async (client) => {
   return instances[0];
 };
 
-const startServer = async (client) => {
-  const instanceInformation = await getInstanceInformation(client);
-
-  let message = 'ERROR';
-
-  if (instanceInformation) {
-    const state = instanceInformation.State;
-    const stateName = state.Name;
-
-    if ((stateName === 'stopped') || (stateName === 'shutting-down')) {
-      const params = {
-        InstanceIds: [`${process.env.INSTANCE_ID}`],
-      };
-      const startInstanceResponse = await client.startInstances(params).promise();
-
-      message = 'ERROR';
-      console.log('\nAWS EC2 START\n');
-      console.log(`${JSON.stringify(startInstanceResponse)}`);
-      console.log('\n');
-
-      const instancesInformation = await client.waitFor('instanceRunning', params).promise();
-      const reservations = instancesInformation.Reservations;
-      const instances = reservations[0].Instances;
-      const instance = instances[0];
-      const ipAddress = instance.PublicIpAddress;
-
-      message = `Server is starting, this may take a few minutes.\nIP: ${ipAddress}`;
-
-      waitForServerOK(ipAddress, client);
-    } else if (stateName === 'running') {
-      message = `IP: ${instanceInformation.PublicIpAddress}`;
-    } else {
-      message = 'ERROR';
-    }
-  }
-
-  return message;
-};
-
 const stopServer = async (client) => {
   const instance = await getInstanceInformation(client);
   let message = 'ERROR';
@@ -138,50 +109,72 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 app.use(express.static(`${__dirname}/client/public`));
+app.use(cookieParser('secret'));
+app.use(session({
+  cookie: { maxAge: 60000 },
+  store: sessionStore,
+  saveUninitialized: true,
+  resave: 'true',
+  secret: 'secret',
+}));
+app.use(flash());
 
 app.get('/', (req, res) => {
-  res.render('pages/index', {
-    ipMessage: '',
-    path: req.body.path,
-  });
+  res.render('pages/index', { messages: req.flash('error') });
 });
 
 app.post('/initMCServer', async (req, res) => {
-  const {
-    password,
-  } = req.body;
-  let message = 'Password Incorrect!';
+  const body = {};
+  const errors = [];
+  const { password } = req.body;
+  const serverID = process.env.INSTANCE_ID;
 
-  if (password === process.env.SERVER_PASSWORD) {
-    const ec2 = new AWS.EC2({
-      region: process.env.EC2_REGION,
-    });
-    message = await startServer(ec2);
+  try {
+    if (password === process.env.SERVER_PASSWORD) {
+      const { state, ipAddress } = await serverService.startServer(serverID);
+
+      body.state = state;
+      body.ipAddress = ipAddress;
+      waitForServerOK(ipAddress);
+      res.status(200).render('pages/index', {
+        body,
+        path: req.path,
+        errors,
+      });
+    } else {
+      req.flash('error', 'Password Incorrect!');
+      res.redirect('/');
+    }
+  } catch (error) {
+    console.error(error);
+    if (error instanceof FailedToStartServerError) {
+      req.flash('error', error.message);
+      res.redirect('/');
+    } else {
+      res.status(502).send(error.message);
+    }
   }
-
-  res.render('pages/index', {
-    ipMessage: message,
-    path: req.path,
-  });
 });
 
 app.post('/stopMCServer', async (req, res) => {
-  const {
-    password,
-  } = req.body;
-  let message = 'Password Incorrect!';
+  const body = {};
+  const errors = [];
+  const { password } = req.body;
 
   if (password === process.env.SERVER_PASSWORD) {
     const ec2 = new AWS.EC2({
       region: process.env.EC2_REGION,
     });
-    message = await stopServer(ec2);
+    body.message = await stopServer(ec2);
+    res.status(200).render('pages/index', {
+      body,
+      path: req.path,
+      errors,
+    });
+  } else {
+    req.flash('error', 'Password Incorrect!');
+    res.redirect('/');
   }
-
-  res.render('pages/index', {
-    ipMessage: message,
-    path: req.path,
-  });
 });
 
 app.listen(process.env.PORT || 3000, () => console.log(`Example app listening on port ${process.env.PORT || 3000}!`));
