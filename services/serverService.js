@@ -12,6 +12,24 @@ const getServerInformation = async (state, serverId) => {
   return serverInformation;
 };
 
+const startServer = async (serverId) => {
+  let { state, ipAddress } = await getServerInformation('instanceExists', serverId);
+
+  if ((state === 'stopped') || (state === 'shutting-down')) {
+    const ec2Helper = new EC2Helper(EC2Client);
+    await ec2Helper.startInstance(serverId);
+
+    ({ state, ipAddress } = await getServerInformation('instanceRunning', serverId));
+  } else if (state === 'running') {
+    ({ state, ipAddress } = await getServerInformation('instanceRunning', serverId));
+  } else {
+    throw new Error('Failed to start the the server...');
+  }
+
+  return ipAddress;
+};
+
 module.exports = {
   getServerInformation,
+  startServer,
 };
