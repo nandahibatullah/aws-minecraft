@@ -1,7 +1,13 @@
 /* eslint-disable no-console */
-module.exports = class EC2Helper {
-  constructor(client) {
-    this.ec2Client = client;
+const AWS = require('aws-sdk');
+
+const EC2Client = new AWS.EC2({
+  region: process.env.EC2_REGION,
+});
+
+module.exports = class EC2 {
+  constructor() {
+    this.ec2Client = EC2Client;
     this.getClient = () => this.ec2Client;
   }
 

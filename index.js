@@ -10,8 +10,8 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const flash = require('connect-flash');
 
-const serverService = require('./services/serverService');
-const FailedToStartServerError = require('./models/errors/failedToStartServerError');
+const serverService = require('./components/serverService');
+const { FailedToStartServerError } = require('./components/serverErrors');
 
 const app = express();
 const ssh = new NodeSSH();
