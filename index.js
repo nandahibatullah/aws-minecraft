@@ -6,12 +6,13 @@ const {
   NodeSSH,
 } = require('node-ssh');
 require('dotenv').config();
+const config = require('config');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const flash = require('connect-flash');
 
-const serverService = require('./components/serverService');
-const { FailedToStartServerError } = require('./components/serverErrors');
+const serverService = require('./components/serverService.js');
+const { FailedToStartServerError } = require('./components/serverErrors.js');
 
 const app = express();
 const ssh = new NodeSSH();
@@ -19,7 +20,7 @@ const sessionStore = new session.MemoryStore();
 
 const initServerCommands = async (instanceIp) => {
   try {
-    const keyString = process.env.SSH_KEY.replace(/\\n/g, '\n');
+    const keyString = config.get('sshKey').replace(/\\n/g, '\n');
     const params = {
       host: instanceIp,
       username: 'ubuntu',
@@ -27,7 +28,7 @@ const initServerCommands = async (instanceIp) => {
     };
 
     await ssh.connect(params);
-    await ssh.execCommand(`./start.sh ${process.env.MEMORY_ALLOCATION || 1}`);
+    await ssh.execCommand(`./start.sh ${config.get('memoryAllocation')}`);
     ssh.dispose();
   } catch (error) {
     console.log('Error running server commands');
@@ -37,12 +38,12 @@ const initServerCommands = async (instanceIp) => {
 
 const waitForServerOK = async (instanceIp) => {
   const client = new AWS.EC2({
-    region: process.env.EC2_REGION,
+    region: config.get('serverRegion'),
   });
   try {
     const params = {
       InstanceIds: [
-        `${process.env.INSTANCE_ID}`,
+        `${config.get('serverId')}`,
       ],
     };
 
@@ -64,7 +65,7 @@ const waitForServerOK = async (instanceIp) => {
 
 const getInstanceInformation = async (client) => {
   const params = {
-    InstanceIds: [`${process.env.INSTANCE_ID}`],
+    InstanceIds: [`${config.get('serverId')}`],
   };
   const instancesInformation = await client.describeInstances(params).promise();
   const reservations = instancesInformation.Reservations;
@@ -87,7 +88,7 @@ const stopServer = async (client) => {
 
     if ((stateName === 'running') || (stateName === 'pending')) {
       const params = {
-        InstanceIds: [`${process.env.INSTANCE_ID}`],
+        InstanceIds: [`${config.get('serverId')}`],
       };
       const stopInstanceResponse = await client.stopInstances(params).promise();
 
@@ -120,17 +121,17 @@ app.use(session({
 app.use(flash());
 
 app.get('/', (req, res) => {
-  res.render('pages/index', { messages: req.flash('error') });
+  res.render('pages/index', { errors: req.flash('error') });
 });
 
 app.post('/initMCServer', async (req, res) => {
   const body = {};
   const errors = [];
   const { password } = req.body;
-  const serverID = process.env.INSTANCE_ID;
+  const serverID = config.get('serverId');
 
   try {
-    if (password === process.env.SERVER_PASSWORD) {
+    if (password === config.get('serverPassword')) {
       const { state, ipAddress } = await serverService.startServer(serverID);
 
       body.state = state;
@@ -158,23 +159,22 @@ app.post('/initMCServer', async (req, res) => {
 
 app.post('/stopMCServer', async (req, res) => {
   const body = {};
-  const errors = [];
   const { password } = req.body;
 
-  if (password === process.env.SERVER_PASSWORD) {
+  if (password === config.get('serverPassword')) {
     const ec2 = new AWS.EC2({
-      region: process.env.EC2_REGION,
+      region: config.get('serverRegion'),
     });
     body.message = await stopServer(ec2);
     res.status(200).render('pages/index', {
       body,
       path: req.path,
-      errors,
+      errors: req.flash('error')
     });
   } else {
     req.flash('error', 'Password Incorrect!');
-    res.redirect('/');
+    res.redirect('/stopMCServer');
   }
 });
 
-app.listen(process.env.PORT || 3000, () => console.log(`Example app listening on port ${process.env.PORT || 3000}!`));
+app.listen(config.get('port'), () => console.log(`Example app listening on port ${config.get('port')}!`));

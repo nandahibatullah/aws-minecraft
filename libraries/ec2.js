@@ -1,8 +1,9 @@
 /* eslint-disable no-console */
 const AWS = require('aws-sdk');
+const config = require('config');
 
 const EC2Client = new AWS.EC2({
-  region: process.env.EC2_REGION,
+  region: config.get('serverRegion'),
 });
 
 module.exports = class EC2 {
