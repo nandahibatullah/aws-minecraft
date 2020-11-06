@@ -7,4 +7,5 @@ module.exports = {
   serverId: process.env.INSTANCE_ID,
   serverPassword: process.env.SERVER_PASSWORD,
   sshKey: process.env.SSH_KEY,
+  username: 'ubuntu',
 };

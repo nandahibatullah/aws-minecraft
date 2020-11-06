@@ -25,8 +25,23 @@ module.exports = class EC2 {
 
     return {
       state: instanceData.State.Name,
-      status: instanceData.Status,
       ipAddress: instanceData.PublicIpAddress,
+    };
+  }
+
+  async describeInstanceStatus(state, instanceId) {
+    const params = {
+      InstanceIds: [instanceId],
+    };
+    const instanceStatusesResponse = await this.ec2Client.waitFor(state, params).promise();
+    const instanceStatusData = instanceStatusesResponse.InstanceStatuses[0];
+
+    console.log('\nSERVER INSTANCES\n');
+    console.log(`${JSON.stringify(instanceStatusData)}`);
+    console.log('\n');
+
+    return {
+      status: instanceStatusData.InstanceStatus.Status,
     };
   }
 
