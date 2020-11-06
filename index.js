@@ -7,7 +7,7 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const flash = require('connect-flash');
 
-const serverService = require('./components/serverService.js');
+const serverService = require('./components/server/serverService');
 
 const app = express();
 const sessionStore = new session.MemoryStore();

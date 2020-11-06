@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 const { NodeSSH } = require('node-ssh');
 const config = require('config');
-const EC2 = require('../libraries/ec2');
-const { FailedToStartMinecraftProcessError } = require('./serverErrors');
+const EC2 = require('../../libraries/ec2');
+const { FailedToStartMinecraftProcessError } = require('./errors');
 
 const exectuteSSHCommand = async (serverIp, command, options) => {
   console.log(`executing ssh command: ${command} with options ${options} on ${serverIp}`);
