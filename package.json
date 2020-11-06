@@ -2,7 +2,7 @@
   "name": "aws-minecraft",
   "version": "1.0.0",
   "description": "A Minecraft Server hosted in AWS with a small web app to manage it.",
-  "main": "index.js",
+  "main": "app.js",
   "repository": "git@github.com:nandahibatullah/aws-minecraft.git",
   "author": "Nanda Hibatullah <nandahibatullah@gmail.com>",
   "license": "MIT",
@@ -16,6 +16,7 @@
     "ejs": "^3.1.5",
     "express": "^4.17.1",
     "express-session": "^1.17.1",
+    "glob": "^7.1.6",
     "node-ssh": "^11.1.1"
   },
   "devDependencies": {

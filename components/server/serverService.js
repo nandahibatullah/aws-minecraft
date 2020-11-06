@@ -79,6 +79,8 @@ const startMinecraftProcess = async (serverId) => {
   } else {
     throw new FailedToStartMinecraftProcessError('status not \'ok\'');
   }
+
+  return serverInformation;
 };
 
 module.exports = {

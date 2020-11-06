@@ -6,24 +6,15 @@ const reqResponse = require('./serverResponseHandler');
 
 module.exports = {
   startServer: async (req, res) => {
-    const body = {};
     const { password } = req.body;
     const serverId = config.get('serverId');
     try {
       if (password === config.get('serverPassword')) {
-        const { state, ipAddress } = await serverService.startServer(serverId);
-
-        body.state = state;
-        body.ipAddress = ipAddress;
-
-        res.status(200).render('pages/index', {
-          body,
-          path: req.path,
-          errors: req.flash('error'),
-        });
+        const serverInformation = await serverService.startServer(serverId);
+        const message = 'server sucessessfully started';
+        res.status(200).send(reqResponse.sucessResponse(200, message, serverInformation));
       } else {
-        req.flash('error', 'Password Incorrect!');
-        res.redirect('/');
+        res.status(400).send(reqResponse.errorResponse(400));
       }
     } catch (error) {
       console.error(error);
@@ -31,16 +22,50 @@ module.exports = {
     }
   },
   stopServer: async (req, res) => {
+    const { password } = req.body;
+    const serverId = config.get('serverId');
     try {
-      res.render();
+      if (password === config.get('serverPassword')) {
+        const serverInformation = await serverService.stopServer(serverId);
+        const message = 'server sucessessfully stopped';
+        res.status(200).send(reqResponse.sucessResponse(200, message, serverInformation));
+      } else {
+        res.status(400).send(reqResponse.errorResponse(400));
+      }
     } catch (error) {
       console.error(error);
       res.status(502).send(reqResponse.errorResponse(502));
     }
   },
   startMinecraftProcess: async (req, res) => {
+    const { password } = req.body;
+    const serverId = config.get('serverId');
+
     try {
-      res.render();
+      if (password === config.get('serverPassword')) {
+        const serverInformation = await serverService.startMinecraftProcess(serverId);
+        const message = 'minecraft processess successfully started';
+        res.status(200).send(reqResponse.sucessResponse(200, message, serverInformation));
+      } else {
+        res.status(400).send(reqResponse.errorResponse(400));
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(502).send(reqResponse.errorResponse(502));
+    }
+  },
+  serverInformation: async (req, res) => {
+    const { password, state } = req.body;
+    const serverId = config.get('serverId');
+
+    try {
+      if (password === config.get('serverPassword')) {
+        const serverInformation = await serverService.getServerInformation(state, serverId);
+        const message = 'server information recieved successfully';
+        res.status(200).send(reqResponse.sucessResponse(200, message, serverInformation));
+      } else {
+        res.status(400).send(reqResponse.errorResponse(400));
+      }
     } catch (error) {
       console.error(error);
       res.status(502).send(reqResponse.errorResponse(502));
