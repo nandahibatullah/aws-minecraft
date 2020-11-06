@@ -27,7 +27,20 @@ const startServer = async (serverId) => {
   return { state, ipAddress };
 };
 
+const stopServer = async (serverId) => {
+  let { state } = await getServerInformation('instanceExists', serverId);
+
+  if ((state === 'running') || (state === 'pending')) {
+    const ec2 = new EC2();
+    await ec2.stopInstance(serverId);
+    state = 'stopping';
+  }
+
+  return { state };
+};
+
 module.exports = {
   getServerInformation,
   startServer,
+  stopServer,
 };

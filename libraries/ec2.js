@@ -40,4 +40,15 @@ module.exports = class EC2 {
     console.log(`${JSON.stringify(instancesResponse)}`);
     console.log('\n');
   }
+
+  async stopInstance(instanceId) {
+    const params = {
+      InstanceIds: [instanceId],
+    };
+    const instancesResponse = await this.ec2Client.stopInstances(params).promise();
+
+    console.log('\nAWS EC2 STOPT\n');
+    console.log(`${JSON.stringify(instancesResponse)}`);
+    console.log('\n');
+  }
 };

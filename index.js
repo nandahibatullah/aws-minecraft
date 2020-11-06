@@ -63,47 +63,6 @@ const waitForServerOK = async (instanceIp) => {
   }
 };
 
-const getInstanceInformation = async (client) => {
-  const params = {
-    InstanceIds: [`${config.get('serverId')}`],
-  };
-  const instancesInformation = await client.describeInstances(params).promise();
-  const reservations = instancesInformation.Reservations;
-  const instances = reservations[0].Instances;
-
-  console.log('\nSERVER INSTANCES\n');
-  console.log(`${JSON.stringify(instances)}`);
-  console.log('\n');
-
-  return instances[0];
-};
-
-const stopServer = async (client) => {
-  const instance = await getInstanceInformation(client);
-  let message = 'ERROR';
-
-  if (instance) {
-    const state = instance.State;
-    const stateName = state.Name;
-
-    if ((stateName === 'running') || (stateName === 'pending')) {
-      const params = {
-        InstanceIds: [`${config.get('serverId')}`],
-      };
-      const stopInstanceResponse = await client.stopInstances(params).promise();
-
-      console.log('\nAWS EC2 STOP\n');
-      console.log(`${JSON.stringify(stopInstanceResponse)}`);
-      console.log('\n');
-      message = 'stopping server...';
-    } else if (stateName === 'stopped') {
-      message = 'server stopped';
-    }
-  }
-
-  return message;
-};
-
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({
   extended: false,
@@ -126,7 +85,6 @@ app.get('/', (req, res) => {
 
 app.post('/initMCServer', async (req, res) => {
   const body = {};
-  const errors = [];
   const { password } = req.body;
   const serverID = config.get('serverId');
 
@@ -137,10 +95,11 @@ app.post('/initMCServer', async (req, res) => {
       body.state = state;
       body.ipAddress = ipAddress;
       waitForServerOK(ipAddress);
+
       res.status(200).render('pages/index', {
         body,
         path: req.path,
-        errors,
+        errors: req.flash('error'),
       });
     } else {
       req.flash('error', 'Password Incorrect!');
@@ -160,20 +119,23 @@ app.post('/initMCServer', async (req, res) => {
 app.post('/stopMCServer', async (req, res) => {
   const body = {};
   const { password } = req.body;
+  const serverID = config.get('serverId');
 
-  if (password === config.get('serverPassword')) {
-    const ec2 = new AWS.EC2({
-      region: config.get('serverRegion'),
-    });
-    body.message = await stopServer(ec2);
-    res.status(200).render('pages/index', {
-      body,
-      path: req.path,
-      errors: req.flash('error')
-    });
-  } else {
-    req.flash('error', 'Password Incorrect!');
-    res.redirect('/stopMCServer');
+  try {
+    if (password === config.get('serverPassword')) {
+      const { state } = await serverService.startServer(serverID);
+
+      body.state = state;
+      res.status(200).render('pages/index', {
+        path: req.path,
+      });
+    } else {
+      req.flash('error', 'Password Incorrect!');
+      res.redirect('/');
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(502).send(error.message);
   }
 });
 

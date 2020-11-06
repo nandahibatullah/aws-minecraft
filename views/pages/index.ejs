@@ -29,14 +29,16 @@
         Server is starting, this may take a few minutes...</br>
         IP: <%- body.ipAddress %> | mcserver.nandahibatullah.dev
       </h2>
-    <% } else if (locals.body && body.message) { %>
+    <% } else if (locals.body && body.state === 'stopping' && body.ipAddress) { %>
       <h2>
-        <%- body.message %> 
+        the server is stopping...
       </h2>
-    <% } else if (messages) { %>
+    <% } else if (locals.body && body.state === 'stopped' && body.ipAddress) { %>
       <h2>
-        <p><%= messages %></p>
+        the server is offline.
       </h2>
+    <% } else if (errors) { %>
+        <p><%- errors %></p>
     <% } %>
     </div>
 </body>
