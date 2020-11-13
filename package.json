@@ -22,9 +22,11 @@
   "devDependencies": {
     "eslint": "^7.12.1",
     "eslint-config-airbnb-base": "^14.2.0",
-    "eslint-plugin-import": "^2.22.1"
+    "eslint-plugin-import": "^2.22.1",
+    "jest": "^26.6.3"
   },
   "scripts": {
-    "create-ec2-instance": "node scripts/createEC2Instance.js"
+    "create-ec2-instance": "node scripts/createEC2Instance.js",
+    "test": "jest"
   }
 }
