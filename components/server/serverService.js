@@ -22,15 +22,13 @@ const exectuteSSHCommand = async (serverIp, command, options) => {
 };
 
 const getServerInformation = async (state, serverId) => {
-  const ec2 = new EC2();
-  const serverInformation = await ec2.describeInstance(state, serverId);
+  const serverInformation = await EC2.describeInstance(state, serverId);
 
   return serverInformation;
 };
 
 const getServerStatusInformation = async (state, serverId) => {
-  const ec2 = new EC2();
-  const serverStatusInformation = await ec2.describeInstanceStatus(state, serverId);
+  const serverStatusInformation = await EC2.describeInstanceStatus(state, serverId);
 
   return serverStatusInformation;
 };
@@ -41,8 +39,7 @@ const startServer = async (serverId) => {
   if ((state === 'stopped') || (state === 'stopping')) {
     await getServerInformation('instanceStopped', serverId);
 
-    const ec2 = new EC2();
-    await ec2.startInstance(serverId);
+    await EC2.startInstance(serverId);
 
     const serverInformation = await getServerInformation('instanceRunning', serverId);
 
@@ -59,8 +56,7 @@ const stopServer = async (serverId) => {
   let { state } = await getServerInformation('instanceExists', serverId);
 
   if ((state === 'running') || (state === 'pending')) {
-    const ec2 = new EC2();
-    await ec2.stopInstance(serverId);
+    await EC2.stopInstance(serverId);
     state = 'stopping';
   }
 
