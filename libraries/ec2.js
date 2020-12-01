@@ -55,7 +55,7 @@ module.exports = {
 
     let status = '';
 
-    if (isInstanceStopped(ec2Client, params)) {
+    if (await isInstanceStopped(ec2Client, params)) {
       status = 'stopped';
     } else {
       const instanceStatusesResponse = await ec2Client.waitFor(stateString, params).promise();

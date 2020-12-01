@@ -1,0 +1,15 @@
+
+{
+  "Reservations": [
+    {
+      "Instances": [
+        {
+          "State": {
+            "Name": "stopped"
+          },
+          "PublicIpAddress": ""
+        }
+      ]
+    }
+  ]
+}
