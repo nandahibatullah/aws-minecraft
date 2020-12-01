@@ -482,6 +482,13 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
+"@mapbox/aws-sdk-jest@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@mapbox/aws-sdk-jest/-/aws-sdk-jest-0.0.2.tgz#c8ff1faa23c80977d78ad436205db0f7a7f0b85d"
+  integrity sha512-wEXR3SzanW8BE2IzeqnQqbpJmEfALZAacL9KRavCNx1qY5U1ZIk1pXMZfHhEimOoM4GqxK1Vn614FOuapktz+w==
+  dependencies:
+    traverse "^0.6.6"
+
 "@sinonjs/commons@^1.7.0":
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.1.tgz#e7df00f98a203324f6dc7cc606cad9d4a8ab2217"
@@ -776,10 +783,10 @@ atob@^2.1.2:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-aws-sdk@^2.780.0:
-  version "2.780.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.780.0.tgz#ac88e5222cb4a09385791fbb5a58114ad5abc9c1"
-  integrity sha512-pz/3dJdrkqgJn2YPwu6/VaGBSvYm33wjb6Ic7zSuFPOduqo42Se70BQASNmUg1E8EBqSwsrYEW04f5XGOJ0mMA==
+aws-sdk@^2.799.0:
+  version "2.799.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.799.0.tgz#8b1a64c1a9f8ccf5794eb07bdd8051e4cb6adcfd"
+  integrity sha512-NYAoiNU+bJXhlJsC0rFqrmD5t5ho7/VxldmziP6HLPYHfOCI9Uvk6UVjfPmhLWPm0mHnIxhsHqmsNGyjhHNYmw==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -4490,6 +4497,11 @@ tr46@^2.0.2:
   integrity sha512-3n1qG+/5kg+jrbTzwAykB5yRYtQCTqOGKq5U5PE3b0a1/mzo6snDhjGS0zJVJunO0NrT3Dg1MLy5TjWP/UJppg==
   dependencies:
     punycode "^2.1.1"
+
+traverse@^0.6.6:
+  version "0.6.6"
+  resolved "https://registry.yarnpkg.com/traverse/-/traverse-0.6.6.tgz#cbdf560fd7b9af632502fed40f918c157ea97137"
+  integrity sha1-y99WD9e5r2MlAv7UD5GMFX6pcTc=
 
 tsconfig-paths@^3.9.0:
   version "3.9.0"
